@@ -1,9 +1,9 @@
         .data
-txt_espaco:     " "
-txt_linha:      "\n"
-txt_menu:       "\nMenu\n1 Inserir\n2 Remover\n3 Buscar\n4 Ordenar\n5 Exibir\n6 Sair\nOpcao: "
-txt_insere:     "\nValor a inserir: "
-txt_vazia:      "\nLista vazia!"
+txt_espaco:     .asciiz " "
+txt_linha:      .asciiz "\n"
+txt_menu:       .asciiz "\nMenu\n1 Inserir\n2 Remover\n3 Buscar\n4 Ordenar\n5 Exibir\n6 Sair\nOpcao: "
+txt_insere:     .asciiz "\nValor a inserir: "
+txt_vazia:      .asciiz "\nLista vazia!"
         .text
 main:
         li   $s0, 0     #s0 aponta para o inicio da lista, inicialmente NULL
@@ -89,7 +89,7 @@ prt_loop_beg:
         beqz $t1, prt_loop_end #se o elemento atual for NULL, termina de printar
         lw   $a0, 0 ($t1)
         li   $v0, 1
-        sycall          #print t1 (elemento atual)
+        syscall          #print t1 (elemento atual)
 
         la   $a0, txt_espaco
         li   $v0, 4
@@ -106,8 +106,18 @@ prt_loop_end:
 
 print_vazia:
         la   $a0, txt_vazia
-        li   $v0, 5
-        syscall         print txt_vazia
+        li   $v0, 4
+        syscall         #print txt_vazia
         j    menu
 
 #FIM DO PRINT
+
+
+remover:
+        j    menu
+
+buscar:
+        j    menu
+
+ordenar:
+        j    menu
