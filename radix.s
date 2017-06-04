@@ -93,7 +93,7 @@ prt_loop_beg:
 
         la   $a0, txt_espaco
         li   $v0, 4
-        syscall         #print "\n"
+        syscall         #print " "
 
         lw   $t1, 8 ($t1) #t1 = t1->next
         j    prt_loop_beg
