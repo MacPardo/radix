@@ -7,6 +7,7 @@ txt_buscar:     .asciiz "\nValor a buscar: "
 txt_existe:     .asciiz "\nO elemento existe!\n"
 txt_nao_existe: .asciiz "\nO elemento nao existe!\n"
 txt_vazia:      .asciiz "\nLista vazia!\n"
+txt_remover:    .asciiz "\nElemento a remover: "
         .text
 main:
         li   $s0, 0     #s0 aponta para o inicio da lista, inicialmente NULL
@@ -30,6 +31,7 @@ menu:
         #se nao foi nenhuma dessas opcoes, sai do programa
         li   $v0, 10
         syscall
+#FIM DO MENU
 
 inserir:        
         li   $v0, 4
@@ -117,7 +119,44 @@ print_vazia:
 
 
 remover:
+        la   $a0, txt_remover
+        li   $v0, 4
+        syscall         #print txt_remover
+
+        li   $v0, 5
+        syscall
+
+        #v0 eh o elemento a ser removido
+
+        move $t1, $s0 #t1 aponta para o elemento atual
+        #t1 tem que parar no elemento a ser removido
+
+rm_loop_beg:
+        beqz $t1, menu  #caso nao exista o elemento a ser removido, volta pro menu
+        lw   $t0, 0 ($t1) #t0 eh o valor do elemento atual
+        beq  $t0, $v0, rm_loop_end #se encontrou o valor a remover, sai do loop
+        lw   $t1, 8 ($t1) #t1 = t1->next
+        j    rm_loop_beg
+rm_loop_end:   
+        #agora, o proximo do anterior tem que ser o proximo do atual
+        #e o anterior do proximo tem que ser o anterior do atual
+
+        beq  $s0, $t1   #se o elemento a ser removido eh o primeiro
+        lw   $s0, 8 ($t1) #tem que atualizar s0 como t1->prox
+
+        lw   $t2, 4 ($t1) #t2 aponta para o anterior
+        lw   $t3, 8 ($t1) #t3 aponta para o proximo
+
+        beqz $t2, ant_null #se o anterior eh NULL
+        sw   $t2, 8 ($t3)  #proximo do anterior = proximo do atual
+ant_null:       
+
+        beqz $t3, prox_null #se o proximo eh NULL
+        sw   $t3, 4 ($t2)  #anterior do proximo = anterior do atual
+prox_null:      
+
         j    menu
+#FIM DA REMOCAO
 
 buscar:
         la   $a0, txt_buscar
@@ -146,6 +185,7 @@ buscar_nao_encontrou:
         la   $a0, txt_nao_existe
         syscall         #print txt_nao_existe
         j    menu
+#FIM DA BUSCA        
 
 ordenar:
         j    menu
