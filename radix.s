@@ -3,7 +3,10 @@ txt_espaco:     .asciiz " "
 txt_linha:      .asciiz "\n"
 txt_menu:       .asciiz "\nMenu\n1 Inserir\n2 Remover\n3 Buscar\n4 Ordenar\n5 Exibir\n6 Sair\nOpcao: "
 txt_insere:     .asciiz "\nValor a inserir: "
-txt_vazia:      .asciiz "\nLista vazia!"
+txt_buscar:     .asciiz "\nValor a buscar: "
+txt_existe:     .asciiz "\nO elemento existe!\n"
+txt_nao_existe: .asciiz "\nO elemento nao existe!\n"
+txt_vazia:      .asciiz "\nLista vazia!\n"
         .text
 main:
         li   $s0, 0     #s0 aponta para o inicio da lista, inicialmente NULL
@@ -117,6 +120,31 @@ remover:
         j    menu
 
 buscar:
+        la   $a0, txt_buscar
+        li   $v0, 4
+        syscall         #print txt_buscar
+
+        li   $v0, 5
+        syscall         #v0 eh o valor a buscar
+        
+        beqz $s0, buscar_nao_encontrou #se a lista eh vazia nao encontra elemento
+
+        move $t1, $s0 #t1 aponta para o elemento atual
+buscar_loop_beg:        
+        beqz $t1, buscar_nao_encontrou #se elemento atual eh NULL, nao encontrou
+        lw   $t0, 0 ($t1) #t0 eh o valor do elemento atual
+        beq  $t0, $v0, buscar_encontrou #se valor do elemento atual = valor a buscar, encontrou
+        lw   $t1, 8 ($t1) #t1 = t1->next
+        j    buscar_loop_beg
+buscar_encontrou:
+        li   $v0, 4
+        la   $a0, txt_existe
+        syscall         #print txt_existe
+        j    menu
+buscar_nao_encontrou:   
+        li   $v0, 4
+        la   $a0, txt_nao_existe
+        syscall         #print txt_nao_existe
         j    menu
 
 ordenar:
