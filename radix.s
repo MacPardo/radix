@@ -1,5 +1,6 @@
         .data
 txt_menu:       "\nMenu\n1 Inserir\n2 Remover\n3 Buscar\n4 Ordenar\n5 Exibir\n6 Sair\nOpcao: "
+txt_insere:     "\nValor a inserir: "
         .text
 main:
         li   $s0, 0     #s0 aponta para o inicio da lista, inicialmente null
@@ -25,5 +26,9 @@ mostra_menu:
         syscall
 
 inserir:        
-
-
+        li   $v0, 5
+        la   $a0, txt_insere
+        syscall
+        li   $v0, 4
+        syscall
+        move $a0, $v0
