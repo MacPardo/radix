@@ -141,21 +141,31 @@ rm_loop_end:
         #agora, o proximo do anterior tem que ser o proximo do atual
         #e o anterior do proximo tem que ser o anterior do atual
 
-        beq  $s0, $t1   #se o elemento a ser removido eh o primeiro
+        bne  $s0, $t1, nao_primeiro   #se o elemento a ser removido eh o primeiro
         lw   $s0, 8 ($t1) #tem que atualizar s0 como t1->prox
+nao_primeiro:
 
         lw   $t2, 4 ($t1) #t2 aponta para o anterior
         lw   $t3, 8 ($t1) #t3 aponta para o proximo
 
-        beqz $t2, ant_null #se o anterior eh NULL
-        sw   $t2, 8 ($t3)  #proximo do anterior = proximo do atual
-ant_null:       
 
-        beqz $t3, prox_null #se o proximo eh NULL
-        sw   $t3, 4 ($t2)  #anterior do proximo = anterior do atual
-prox_null:      
+        #fazer reaponteirametno
+
+        #if t1->prev != NULL:
+        #    t1->prev->next = t1->next
+        beqz $t2, prev_null
+        sw   $t3, 8 ($t2)
+prev_null:      
+
+        #if t1->next != NULL:
+        #    t1->next->prev = t1->prev
+        beqz $t3, next_null
+        sw   $t2, 4 ($t3)
+next_null:      
 
         j    menu
+
+        
 #FIM DA REMOCAO
 
 buscar:
