@@ -213,18 +213,15 @@ ord_loop0_beg:          #loop para encontrar o valor maximo e o tamanho da lista
         lw   $t0, 0 ($t1)
         addi $t3, $t3, 1  #tamanho_lista++
         lw   $t1, 8 ($t1) #t1 = t1->next #prepara t1 para a proxima iteracao
-                
+
         slt  $t7, $t2, $t0 #se max < elemento_atual, t7 = 1, senao t7 = 0
+        
         #t7 vai ser 1 quando tem que atualizar max
         beqz $t7, ord_loop0_beg #se nao tem que atualizar max vai para o comeco do loop
-        move $t7, $t0 #atualiza max como elemento_atual
-        
-        la   $a0, txt_debug
-        li   $v0, 4
-        syscall
+        move $t2, $t0 #atualiza max como elemento_atual
         
         j    ord_loop0_beg
-ord_loop0_end:  
+ord_loop0_end:
 
         #agora t2 eh o maior valor e t3 eh o tamanho da lista
         
