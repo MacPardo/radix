@@ -8,6 +8,8 @@ txt_existe:     .asciiz "\nO elemento existe!\n"
 txt_nao_existe: .asciiz "\nO elemento nao existe!\n"
 txt_vazia:      .asciiz "\nLista vazia!\n"
 txt_remover:    .asciiz "\nElemento a remover: "
+txt_debug:      .asciiz "\nDebug\n"
+radix_aux:      .space  4000
         .text
 main:
         li   $s0, 0     #s0 aponta para o inicio da lista, inicialmente NULL
@@ -198,4 +200,48 @@ buscar_nao_encontrou:
 #FIM DA BUSCA        
 
 ordenar:
+        beqz $s0, menu #se a lista eh vazia nao tem que ordenar
+        #t0 eh valor do elemento atual
+        #t1 eh ponteiro p/ elemento atual
+        #t2 eh o maior valor
+        #t3 eh o tamanho da lista
+        move $t1, $s0 #t1 esta apontando para o inicio da lista
+        lw   $t2, 0 ($s0) #t2 (max) eh o primeiro valor inicialmente
+        move $t3, $zero #t3 (tamanho_lista) eh inicialmente zero
+ord_loop0_beg:          #loop para encontrar o valor maximo e o tamanho da lista
+        beqz $t1, ord_loop0_end #se o elemento atual eh NULL, sai do loop
+        lw   $t0, 0 ($t1)
+        addi $t3, $t3, 1  #tamanho_lista++
+        lw   $t1, 8 ($t1) #t1 = t1->next #prepara t1 para a proxima iteracao
+                
+        slt  $t7, $t2, $t0 #se max < elemento_atual, t7 = 1, senao t7 = 0
+        #t7 vai ser 1 quando tem que atualizar max
+        beqz $t7, ord_loop0_beg #se nao tem que atualizar max vai para o comeco do loop
+        move $t7, $t0 #atualiza max como elemento_atual
+        
+        la   $a0, txt_debug
+        li   $v0, 4
+        syscall
+        
+        j    ord_loop0_beg
+ord_loop0_end:  
+
+        #agora t2 eh o maior valor e t3 eh o tamanho da lista
+        
+        la   $a0, txt_linha
+        li   $v0, 4
+        syscall         #print "\n"
+
+        move $a0, $t2
+        li   $v0, 1
+        syscall
+
+        la   $a0, txt_linha
+        li   $v0, 4
+        syscall         #print "\n"
+
+        move $a0, $t3
+        li   $v0, 1
+        syscall
+
         j    menu
