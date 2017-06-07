@@ -16,6 +16,7 @@ main:
         li   $s1, 10
         li   $s2, 40
         li   $s3, 4
+        li   $s5, 80
 
         la   $s4, int_aux
 
@@ -214,12 +215,12 @@ ordenar:
         #t2 eh o maior valor
         #t3 eh o tamanho da lista
         #t4 eh o n
-        #t5 aponta para o vetor que tem as pilhas
+        #t5 aponta para o vetor que tem as filas
         #t9 eh usado quando tem que fazer slt e outras coias
         #s1 = 10
         #s2 = 40
         #s3 = 4
-        #s4 aponta para vetor com o tamanho das pilhas
+        #s4 aponta para vetor com o tamanho das filas
 
         move $t1, $s0 #t1 esta apontando para o inicio da lista
         lw   $t2, 0 ($s0) #t2 (max) eh o primeiro valor inicialmente
@@ -246,7 +247,7 @@ ord_loop0_end:
         #declaracao do segundo vetor auxiliar
         #este vetor se comporta como uma matriz de 10 linhas
         #e uma quantidade de colunas igual ao tamanho da lista inserida pelo usuario
-        #este vetor armazena as pilhas usadas no radix sort
+        #este vetor armazena as filas usadas no radix sort
         mult $t3, $s2
         mflo $a0        #a0 = tamanho da lista * 40
         li   $v0, 9
@@ -265,7 +266,7 @@ ord_loop_beg:           #loop que faz a ordenacao
         #zera o vetor auxiliar 1
         move $t9, $zero
 zerar_aux_beg:          #preenche int_aux com zero
-        beq  $t9, $s4, ord_loop1_beg
+        beq  $t9, $s5, ord_loop1_beg #se t9 for igual ao tamanho do int_aux
         sw   $zero, $t9 ($s4)
         addi $t9, 4
         j    zerar_aux_beg
@@ -284,10 +285,28 @@ ord_loop1_beg:          #este loop coloca os numeros nas filas
         mfhi $t8        #t8 %= t4
 
         #t9 = t8 * 8 + 4
+        #t9 eh a posicao de memoria do vetor auxiliar 1 que indica a qtd de numeros na fila t8
         li   $t9, 8
         mult $t8, $t9
         mflo $t9
         addi $t9, $t9, 4
+
+        #t7 = qtd de elementos na fila t8
+        lw   $t7, $t9 ($s4) #t7 = s4[t9] ... t7 = s4[t8][2]
+
+
+        #a0 = (t8 * list_size + t9) * 4
+        #a0 = posicao de memoria onde escrever t0
+        mult $t8, $t3
+        mflo $a0
+        add  $a0, $a0, $t7
+        mult $a0, $s3
+        mflo $a0
+
+        sw   $t0, $a0 ($t5) #escreve t0 no int_aux
+
+        addi $t7, $t7, 1
+        sw   $t7, $t9 ($s4) #salva o novo tamanho da fila
 
         lw   $t1, 8 ($t1) #t1 = t1->next
         j    ord_loop1_beg
