@@ -9,14 +9,13 @@ txt_nao_existe: .asciiz "\nO elemento nao existe!\n"
 txt_vazia:      .asciiz "\nLista vazia!\n"
 txt_remover:    .asciiz "\nElemento a remover: "
 txt_debug:      .asciiz "\nDebug\n"
-int_aux:        .space   80
+int_aux:        .space   40
         .text
 main:
         li   $s0, 0     #s0 aponta para o inicio da lista, inicialmente NULL
         li   $s1, 10
         li   $s2, 40
         li   $s3, 4
-        li   $s5, 80
 
         la   $s4, int_aux
 
@@ -221,7 +220,6 @@ ordenar:
         #s2 = 40
         #s3 = 4
         #s4 aponta para vetor com o tamanho das filas
-        #s5 = 80
 
         move $t1, $s0 #t1 esta apontando para o inicio da lista
         lw   $t2, 0 ($s0) #t2 (max) eh o primeiro valor inicialmente
@@ -267,7 +265,7 @@ ord_loop_beg:           #loop que faz a ordenacao
         #zera o vetor auxiliar 1
         move $t9, $zero
 zerar_aux_beg:          #preenche int_aux com zero
-        beq  $t9, $s5, ord_loop1_beg #se t9 for igual ao tamanho do int_aux
+        beq  $t9, $s2, ord_loop1_beg #se t9 for igual ao tamanho do int_aux
         sw   $zero, $t9 ($s4)
         addi $t9, 4
         j    zerar_aux_beg
@@ -285,12 +283,10 @@ ord_loop1_beg:          #este loop coloca os numeros nas filas
         div  $t8, $s1
         mfhi $t8        #t8 %= 10
 
-        #t9 = t8 * 8 + 4
+        #t9 = t8 * 4
         #t9 eh a posicao de memoria do vetor auxiliar 1 que indica a qtd de numeros na fila t8
-        li   $t9, 8
-        mult $t8, $t9
+        mult $t8, $s3
         mflo $t9
-        addi $t9, $t9, 4
 
         #t7 = qtd de elementos na fila t8
         lw   $t7, $t9 ($s4) #t7 = s4[t9] ... t7 = s4[t8][2]
@@ -313,6 +309,7 @@ ord_loop1_beg:          #este loop coloca os numeros nas filas
         j    ord_loop1_beg
 ord_loop1_end:  
 
+        move $t1, $s0
 ord_loop2_beg:  
 ord_loop2_end:  
 
