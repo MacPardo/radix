@@ -9,14 +9,13 @@ txt_nao_existe: .asciiz "\nO elemento nao existe!\n"
 txt_vazia:      .asciiz "\nLista vazia!\n"
 txt_remover:    .asciiz "\nElemento a remover: "
 txt_debug:      .asciiz "\nDebug\n"
-int_aux:        .word   80
+int_aux:        .space   80
         .text
 main:
         li   $s0, 0     #s0 aponta para o inicio da lista, inicialmente NULL
         li   $s1, 10
         li   $s2, 40
         li   $s3, 4
-        li   $s4, 80
 
         la   $s4, int_aux
 
@@ -255,26 +254,43 @@ ord_loop0_end:
 
         li   $t4, 1     #n comeca como 1
         
-ord_loop_beg:           #loop que faz a ordenacao
+        move $t1, $s0
 
-        #zera o vetor auxiliar 1
-        move $t9, $zero
-zerar_aux_beg:          #preenche int_aux com zero
-        beq  $t9, $s4, zerar_aux_end
-        sw   $zero, $t9 ($s4)
-        addi $t9, 4
-        j    zerar_aux_beg
-zerar_aux_end:  
+ord_loop_beg:           #loop que faz a ordenacao
         #sai do loop quando max < n
         slt  $t9, $t2, $t4 #se t2 (max) < t4 (n) entao t9 = 1 senao t9 = 0
         bnez $t9, ord_loop_end #se max < n sai do loop
 
-        #t0 = (t0 / n) % 10
+        #zera o vetor auxiliar 1
+        move $t9, $zero
+zerar_aux_beg:          #preenche int_aux com zero
+        beq  $t9, $s4, ord_loop1_beg
+        sw   $zero, $t9 ($s4)
+        addi $t9, 4
+        j    zerar_aux_beg
+#fim do loop que zera o int_aux
+
+ord_loop1_beg:          #este loop coloca os numeros nas filas
+        beqz $t1, ord_loop1_end #se acabou a lista sai do loop
+        lw   $t0, 0 ($t1) #t0 = t1->val
+
+        move $t8, $t0
+        #t8 = (t8 / n) % 10
         #pega o digito dessa iteracao
-        div  $t0, $t4
-        mflo $t0        #t0 /= t4
-        div  $t0, $s1
-        mfhi $t0        #t0 %= t4
+        div  $t8, $t4
+        mflo $t8        #t8 /= t4
+        div  $t8, $s1
+        mfhi $t8        #t8 %= t4
+
+        #t9 = t8 * 8 + 4
+        li   $t9, 8
+        mult $t8, $t9
+        mflo $t9
+        addi $t9, $t9, 4
+
+        lw   $t1, 8 ($t1) #t1 = t1->next
+        j    ord_loop1_beg
+ord_loop1_end:  
 
         #prepara n para a proxima iteracao
         mult $t4, $s1
