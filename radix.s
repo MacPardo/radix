@@ -9,10 +9,18 @@ txt_nao_existe: .asciiz "\nO elemento nao existe!\n"
 txt_vazia:      .asciiz "\nLista vazia!\n"
 txt_remover:    .asciiz "\nElemento a remover: "
 txt_debug:      .asciiz "\nDebug\n"
-radix_aux:      .space  4000
+int_aux:        .word   80
         .text
 main:
         li   $s0, 0     #s0 aponta para o inicio da lista, inicialmente NULL
+        li   $s1, 10
+        li   $s2, 40
+        li   $s3, 4
+        li   $s4, 80
+
+        la   $s4, int_aux
+
+
 menu:    
         la   $a0, txt_menu
         li   $v0, 4
@@ -200,45 +208,77 @@ buscar_nao_encontrou:
 #FIM DA BUSCA        
 
 ordenar:
-        beqz $s0, menu #se a lista eh vazia nao tem que ordenar
+        beqz $s0, menu #voce nao precisa ordenar se voce nao tem uma lista
+
         #t0 eh valor do elemento atual
         #t1 eh ponteiro p/ elemento atual
         #t2 eh o maior valor
         #t3 eh o tamanho da lista
+        #t4 eh o n
+        #t5 aponta para o vetor que tem as pilhas
+        #t9 eh usado quando tem que fazer slt e outras coias
+        #s1 = 10
+        #s2 = 40
+        #s3 = 4
+        #s4 aponta para vetor com o tamanho das pilhas
+
         move $t1, $s0 #t1 esta apontando para o inicio da lista
         lw   $t2, 0 ($s0) #t2 (max) eh o primeiro valor inicialmente
         move $t3, $zero #t3 (tamanho_lista) eh inicialmente zero
+
+        #declaracao do segundo vetor auxiliar
+        #este vetor se comporta como uma matriz de 10 linhas
+        #e uma quantidade de colunas igual ao tamanho da lista inserida pelo usuario
+        #este vetor armazena as pilhas usadas no radix sort
+        mult $t3, $s2
+        mflo $a0        #a0 = tamanho da lista * 40
+        li   $v0, 12
+        syscall
+        move $t5, $v0   #t5 aponta para o segundo vetor auxiliar
+
 ord_loop0_beg:          #loop para encontrar o valor maximo e o tamanho da lista
         beqz $t1, ord_loop0_end #se o elemento atual eh NULL, sai do loop
         lw   $t0, 0 ($t1)
         addi $t3, $t3, 1  #tamanho_lista++
         lw   $t1, 8 ($t1) #t1 = t1->next #prepara t1 para a proxima iteracao
 
-        slt  $t7, $t2, $t0 #se max < elemento_atual, t7 = 1, senao t7 = 0
+        slt  $t9, $t2, $t0 #se max < elemento_atual, t9 = 1, senao t9 = 0
         
-        #t7 vai ser 1 quando tem que atualizar max
-        beqz $t7, ord_loop0_beg #se nao tem que atualizar max vai para o comeco do loop
+        #t9 vai ser 1 quando tem que atualizar max
+        beqz $t9, ord_loop0_beg #se nao tem que atualizar max vai para o comeco do loop
         move $t2, $t0 #atualiza max como elemento_atual
         
         j    ord_loop0_beg
 ord_loop0_end:
 
         #agora t2 eh o maior valor e t3 eh o tamanho da lista
+
+        li   $t4, 1     #n comeca como 1
         
-        la   $a0, txt_linha
-        li   $v0, 4
-        syscall         #print "\n"
+ord_loop_beg:           #loop que faz a ordenacao
 
-        move $a0, $t2
-        li   $v0, 1
-        syscall
+        #zera o vetor auxiliar 1
+        move $t9, $zero
+zerar_aux_beg:          #preenche int_aux com zero
+        beq  $t9, $s4, zerar_aux_end
+        sw   $zero, $t9 ($s4)
+        addi $t9, 4
+        j    zerar_aux_beg
+zerar_aux_end:  
+        #sai do loop quando max < n
+        slt  $t9, $t2, $t4 #se t2 (max) < t4 (n) entao t9 = 1 senao t9 = 0
+        bnez $t9, ord_loop_end #se max < n sai do loop
 
-        la   $a0, txt_linha
-        li   $v0, 4
-        syscall         #print "\n"
+        #t0 = (t0 / n) % 10
+        #pega o digito dessa iteracao
+        div  $t0, $t4
+        mflo $t0        #t0 /= t4
+        div  $t0, $s1
+        mfhi $t0        #t0 %= t4
 
-        move $a0, $t3
-        li   $v0, 1
-        syscall
-
+        #prepara n para a proxima iteracao
+        mult $t4, $s1
+        mflo $t4        #t4 (n) *= 10
+        j    ord_loop_beg #volta pro comeco do loop
+ord_loop_end:   
         j    menu
