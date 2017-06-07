@@ -231,7 +231,7 @@ ordenar:
         #este vetor armazena as pilhas usadas no radix sort
         mult $t3, $s2
         mflo $a0        #a0 = tamanho da lista * 40
-        li   $v0, 12
+        li   $v0, 9
         syscall
         move $t5, $v0   #t5 aponta para o segundo vetor auxiliar
 
