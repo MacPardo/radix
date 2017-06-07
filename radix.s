@@ -221,6 +221,7 @@ ordenar:
         #s2 = 40
         #s3 = 4
         #s4 aponta para vetor com o tamanho das filas
+        #s5 = 80
 
         move $t1, $s0 #t1 esta apontando para o inicio da lista
         lw   $t2, 0 ($s0) #t2 (max) eh o primeiro valor inicialmente
@@ -282,7 +283,7 @@ ord_loop1_beg:          #este loop coloca os numeros nas filas
         div  $t8, $t4
         mflo $t8        #t8 /= t4
         div  $t8, $s1
-        mfhi $t8        #t8 %= t4
+        mfhi $t8        #t8 %= 10
 
         #t9 = t8 * 8 + 4
         #t9 eh a posicao de memoria do vetor auxiliar 1 que indica a qtd de numeros na fila t8
@@ -295,7 +296,7 @@ ord_loop1_beg:          #este loop coloca os numeros nas filas
         lw   $t7, $t9 ($s4) #t7 = s4[t9] ... t7 = s4[t8][2]
 
 
-        #a0 = (t8 * list_size + t9) * 4
+        #a0 = (t8 * list_size + t7) * 4 ... a0 = v2[t8][t7]
         #a0 = posicao de memoria onde escrever t0
         mult $t8, $t3
         mflo $a0
@@ -311,6 +312,10 @@ ord_loop1_beg:          #este loop coloca os numeros nas filas
         lw   $t1, 8 ($t1) #t1 = t1->next
         j    ord_loop1_beg
 ord_loop1_end:  
+
+ord_loop2_beg:  
+ord_loop2_end:  
+
 
         #prepara n para a proxima iteracao
         mult $t4, $s1
