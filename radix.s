@@ -225,15 +225,6 @@ ordenar:
         lw   $t2, 0 ($s0) #t2 (max) eh o primeiro valor inicialmente
         move $t3, $zero #t3 (tamanho_lista) eh inicialmente zero
 
-        #declaracao do segundo vetor auxiliar
-        #este vetor se comporta como uma matriz de 10 linhas
-        #e uma quantidade de colunas igual ao tamanho da lista inserida pelo usuario
-        #este vetor armazena as pilhas usadas no radix sort
-        mult $t3, $s2
-        mflo $a0        #a0 = tamanho da lista * 40
-        li   $v0, 9
-        syscall
-        move $t5, $v0   #t5 aponta para o segundo vetor auxiliar
 
 ord_loop0_beg:          #loop para encontrar o valor maximo e o tamanho da lista
         beqz $t1, ord_loop0_end #se o elemento atual eh NULL, sai do loop
@@ -251,6 +242,16 @@ ord_loop0_beg:          #loop para encontrar o valor maximo e o tamanho da lista
 ord_loop0_end:
 
         #agora t2 eh o maior valor e t3 eh o tamanho da lista
+
+        #declaracao do segundo vetor auxiliar
+        #este vetor se comporta como uma matriz de 10 linhas
+        #e uma quantidade de colunas igual ao tamanho da lista inserida pelo usuario
+        #este vetor armazena as pilhas usadas no radix sort
+        mult $t3, $s2
+        mflo $a0        #a0 = tamanho da lista * 40
+        li   $v0, 9
+        syscall
+        move $t5, $v0   #t5 aponta para o segundo vetor auxiliar
 
         li   $t4, 1     #n comeca como 1
         
