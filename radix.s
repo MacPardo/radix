@@ -241,6 +241,9 @@ ord_loop0_beg:          #loop para encontrar o valor maximo e o tamanho da lista
         j    ord_loop0_beg
 ord_loop0_end:
 
+
+
+
         #agora t2 eh o maior valor e t3 eh o tamanho da lista
 
         #declaracao do segundo vetor auxiliar
@@ -263,11 +266,11 @@ ord_loop_beg:           #loop que faz a ordenacao
         bnez $t9, ord_loop_end #se max < n sai do loop
 
         #zera o vetor auxiliar 1
-        move $t9, $zero
+        move $t9, $s4
 zerar_aux_beg:          #preenche int_aux com zero
         beq  $t9, $s2, ord_loop1_beg #se t9 for igual ao tamanho do int_aux
-        sw   $zero, $t9 ($s4)
-        addi $t9, 4
+        sw   $zero, 0 ($t9)
+        addi $t9, $t9, 4
         j    zerar_aux_beg
 #fim do loop que zera o int_aux
 
@@ -288,8 +291,10 @@ ord_loop1_beg:          #este loop coloca os numeros nas filas
         mult $t8, $s3
         mflo $t9
 
+        add  $t9, $t9, $s4
+
         #t7 = qtd de elementos na fila t8
-        lw   $t7, $t9 ($s4) #t7 = s4[t9] ... t7 = s4[t8][2]
+        lw   $t7, 0 ($t9) #t7 = s4[t9] ... t7 = s4[t8][2]
 
 
         #a0 = (t8 * list_size + t7) * 4 ... a0 = v2[t8][t7]
@@ -300,10 +305,12 @@ ord_loop1_beg:          #este loop coloca os numeros nas filas
         mult $a0, $s3
         mflo $a0
 
-        sw   $t0, $a0 ($t5) #escreve t0 no int_aux
+        add  $a0, $a0, $t5
+
+        sw   $t0, 0 ($a0) #escreve t0 no int_aux
 
         addi $t7, $t7, 1
-        sw   $t7, $t9 ($s4) #salva o novo tamanho da fila
+        sw   $t7, 0 ($t9) #salva o novo tamanho da fila
 
         lw   $t1, 8 ($t1) #t1 = t1->next
         j    ord_loop1_beg
@@ -325,8 +332,10 @@ ord_loop2_beg:
         mult $t8, $s3
         mflo $t8
 
+        add  $t8, $t8, $s4
+
         #t8 = numero a escrever na lista
-        lw   $t8, $t8 ($s4)
+        lw   $t8, 0 ($t8)
 
         #t1->val = t8
         sw   $t8, 0 ($t1)
