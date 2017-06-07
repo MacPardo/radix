@@ -310,7 +310,34 @@ ord_loop1_beg:          #este loop coloca os numeros nas filas
 ord_loop1_end:  
 
         move $t1, $s0
+        #agr t4 indica a posicao do primeiro elemento da fila
+        #t6 eh a fila atual
+        #t7 eh o tamanho da fila atual
+        li   $t6, 0
 ord_loop2_beg:  
+        beq  $t6, $s1, ord_loop2_end #se ja passou por todas as filas sai do loop
+
+        #t8 = (t6 * 10 + t4) * 4
+        #t8 = posicao de memoria que tem o numero a escrever na lista
+        mult $t6, $s1
+        mflo $t8
+        add  $t8, $t8, $t4
+        mult $t8, $s3
+        mflo $t8
+
+        #t8 = numero a escrever na lista
+        lw   $t8, $t8 ($s4)
+
+        #t1->val = t8
+        sw   $t8, 0 ($t1)
+
+        #t1 = t1->next
+        lw   $t1, 8 ($t1)
+
+        bne  $t4, $t7, ord_loop2_beg
+        move $t4, $zero
+        addi $t6, $t6, 1
+        j    ord_loop2_beg
 ord_loop2_end:  
 
 
