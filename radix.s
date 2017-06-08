@@ -9,16 +9,12 @@ txt_nao_existe: .asciiz "\nO elemento nao existe!\n"
 txt_vazia:      .asciiz "\nLista vazia!\n"
 txt_remover:    .asciiz "\nElemento a remover: "
 txt_debug:      .asciiz "\nDebug\n"
-int_aux:        .word   40
         .text
 main:
         li   $s0, 0     #s0 aponta para o inicio da lista, inicialmente NULL
         li   $s1, 10
         li   $s2, 40
         li   $s3, 4
-
-        la   $s4, int_aux
-
 
 menu:    
         la   $a0, txt_menu
@@ -215,12 +211,13 @@ ordenar:
         #t2 eh o maior valor
         #t3 eh o tamanho da lista
         #t4 eh o n
-        #t5 aponta para o vetor que tem as filas
+        #t5 aponta para o vetor do radix
+        #t6 eh o contador
+        #t7 digito atual
         #t9 eh usado quando tem que fazer slt e outras coias
         #s1 = 10
         #s2 = 40
         #s3 = 4
-        #s4 aponta para vetor com o tamanho das filas
 
         move $t1, $s0 #t1 esta apontando para o inicio da lista
         lw   $t2, 0 ($s0) #t2 (max) eh o primeiro valor inicialmente
@@ -242,132 +239,83 @@ ord_loop0_beg:          #loop para encontrar o valor maximo e o tamanho da lista
         j    ord_loop0_beg
 ord_loop0_end:
 
-        #agora t2 eh o maior valor e t3 eh o tamanho da lista
-
-        #declaracao do segundo vetor auxiliar
-        #este vetor se comporta como uma matriz de 10 linhas
-        #e uma quantidade de colunas igual ao tamanho da lista inserida pelo usuario
-        #este vetor armazena as filas usadas no radix sort
-        mult $t3, $s2
-        mflo $a0        #a0 = tamanho da lista * 40
         li   $v0, 9
+        move $a0, $t3
         syscall
-        move $t5, $v0   #t5 aponta para o segundo vetor auxiliar
+        move $t5, $v0
 
-        li   $t4, 1     #n comeca como 1
-        
-        move $t1, $s0
+        li   $t4, 1 #inicialmente n = 1
 
+ord_loop_beg:
+        slt  $t9, $t2, $t4 #se maior_valor < n : sai do loop
+        bnez $t9, ord_loop_end
 
-ord_loop_beg:           #loop que faz a ordenacao
-        #sai do loop quando max < n
-        slt  $t9, $t2, $t4 #se t2 (max) < t4 (n) entao t9 = 1 senao t9 = 0
-        bnez $t9, ord_loop_end #se max < n sai do loop
+        move $t7, $zero
 
-        #zera o vetor auxiliar 1
-        #move $t9, $s4
-        la   $t9, int_aux
-        add  $a2, $t9, $s2
-zerar_aux_beg:          #preenche int_aux com zero
-        beq  $t9, $a2, ord_loop1_beg #se t9 for igual ao tamanho do int_aux
-        sw   $zero, 0 ($t9)
-        addi $t9, $t9, 4
-        j    zerar_aux_beg
-#fim do loop que zera o int_aux
+ord_d_beg:	#este loop roda 10 vezes para testar cada digito
+        beq  $t7, $s1, ord_d_end
 
-ord_loop1_beg:          #este loop coloca os numeros nas filas
-        beqz $t1, ord_loop1_end #se acabou a lista sai do loop
+        move $t6, $t5 #t6 = endereco da primeira posicao do vetor radix
+        move $t1, $s0 #t1 = primeiro elemento da lista
+
+ord_loop1_beg:
+        beqz $t1, ord_loop1_end #se chegou no final da lista sai do loop
         lw   $t0, 0 ($t1) #t0 = t1->val
 
-        move $t8, $t0
-        #t8 = (t8 / n) % 10
-        #pega o digito dessa iteracao
-        div  $t8, $t4
-        mflo $t8        #t8 /= t4
+        #t8 = enesimo digito do numero
+        #t8 = (t0 / n) % 10
+        div  $t0, $t4
+        mflo $t8 #t8 = t0 * t4
         div  $t8, $s1
-        mfhi $t8        #t8 %= 10
+        mfhi $t8 #t8 %= 10
 
-        #t9 = t8 * 4
-        #t9 eh a posicao de memoria do vetor auxiliar 1 que indica a qtd de numeros na fila t8
-        mult $t8, $s3
-        mflo $t9
+        bne  $t8, $t7, nao_digito_atual
+        #entra aqui se for o digito atual
+        #entao tem que colocar no vetor do radix
+        sw   $t0, 0 ($t6)
+        addi $t6, $t6, 4  #vai para o proximo indice do vetor radix
 
-        add  $t9, $t9, $s4
+	li   $v0, 1
+	move $a0, $t8
+	syscall
+	li   $v0, 4
+	la   $a0, txt_espaco
+	syscall
 
-        #t7 = qtd de elementos na fila t8
-        lw   $t7, 0 ($t9) #t7 = s4[t9] ... t7 = s4[t8][2]
-
-
-        #a0 = (t8 * list_size + t7) * 4 ... a0 = v2[t8][t7]
-        #a0 = posicao de memoria onde escrever t0
-        mult $t8, $t3
-        mflo $a0
-        add  $a0, $a0, $t7
-        mult $a0, $s3
-        mflo $a0
-
-        add  $a0, $a0, $t5
-
-        sw   $t0, 0 ($a0) #escreve t0 no int_aux
-
-        addi $t7, $t7, 1
-        sw   $t7, 0 ($t9) #salva o novo tamanho da fila
+nao_digito_atual:
 
         lw   $t1, 8 ($t1) #t1 = t1->next
-        j    ord_loop1_beg
-ord_loop1_end:  
-
-        move $t1, $s0
-        move $t9, $zero
-        #agr t9 indica a posicao do primeiro elemento da fila
-        #t6 eh a fila atual
-        #t7 eh o tamanho da fila atual
-        li   $t6, 0
-        lw   $t7, 0 ($s4)
-ord_loop2_beg:  #este loop devolve os numeros para a lista
-        #beq  $t6, $s1, ord_loop2_end #se ja passou por todas as filas sai do loop
-	beqz $t1, ord_loop2_end
-	
-	beq  $t9, $t6, ord_loop2_nextline
-	
-	#v[x][y]
-	#(x * t + y) * 4
-
-        #t8 = (t6 * t3 [tamanho de uma linha] + t9) * 4
-        #t8 = posicao de memoria que tem o numero a escrever na lista
-        mult $t6, $t3
-        mflo $t8
-        add  $t8, $t8, $t9
-        mult $t8, $s3
-        mflo $t8
-
-
-        add  $t8, $t8, $t5
-        #t8 = numero a escrever na lista
-        lw   $t8, 0 ($t8)
-
-        #t1->val = t8
-        sw   $t8, 0 ($t1)
-
-        #t1 = t1->next
-        lw   $t1, 8 ($t1)
         
-        addi $t9, $t9, 1
+        j    ord_loop1_beg
+ord_loop1_end:
 
-        #bne  $t9, $t7, ord_loop2_beg
-        #move $t9, $zero
-        #addi $t6, $t6, 1
-        j    ord_loop2_beg
-ord_loop2_nextline:
-	addi $t6, $t6, 1
-	move $t9, $zero
+        addi $t7, $t7, 1
+        j    ord_d_beg
+
+ord_d_end:
+
+	move $t1, $s0 #inicializa o t1 como o primeiro elemento da lista
+	move $t6, $t5 #o "contador" recebe a posicao de memoria do vetor do radix
+ord_loop2_beg:	#loop que passa de volta para a lista
+	beqz $t1, ord_loop2_end #se chegou no fim da lista sai do loop
+
+		
+	lw   $t0, 0 ($t6)
+	sw   $t0  0 ($t1)
+	
+
+
+	
+	lw   $t1, 8 ($t1) #t1 = t1->next
+	addi $t6, $t6, 4
 	j    ord_loop2_beg
-ord_loop2_end:  
+ord_loop2_end:
 
-
-        #prepara n para a proxima iteracao
+        #n *= 10
         mult $t4, $s1
-        mflo $t4        #t4 (n) *= 10
-        j    ord_loop_beg #volta pro comeco do loop
-ord_loop_end:   
+        mflo $t4
+        j    ord_loop_beg
+ord_loop_end:
+
+
         j    menu
