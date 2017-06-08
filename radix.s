@@ -323,20 +323,26 @@ ord_loop1_end:
         #t6 eh a fila atual
         #t7 eh o tamanho da fila atual
         li   $t6, 0
-ord_loop2_beg:  
+        lw   $t7, 0 ($s4)
+ord_loop2_beg:  #este loop devolve os numeros para a lista
         #beq  $t6, $s1, ord_loop2_end #se ja passou por todas as filas sai do loop
 	beqz $t1, ord_loop2_end
+	
+	beq  $t9, $t6, ord_loop2_nextline
+	
+	#v[x][y]
+	#(x * t + y) * 4
 
-        #t8 = (t6 * 10 + t4) * 4
+        #t8 = (t6 * t3 [tamanho de uma linha] + t9) * 4
         #t8 = posicao de memoria que tem o numero a escrever na lista
-        mult $t6, $s1
+        mult $t6, $t3
         mflo $t8
         add  $t8, $t8, $t9
         mult $t8, $s3
         mflo $t8
 
-        add  $t8, $t8, $s4
 
+        add  $t8, $t8, $t5
         #t8 = numero a escrever na lista
         lw   $t8, 0 ($t8)
 
@@ -345,11 +351,17 @@ ord_loop2_beg:
 
         #t1 = t1->next
         lw   $t1, 8 ($t1)
+        
+        addi $t9, $t9, 1
 
-        bne  $t9, $t7, ord_loop2_beg
-        move $t9, $zero
-        addi $t6, $t6, 1
+        #bne  $t9, $t7, ord_loop2_beg
+        #move $t9, $zero
+        #addi $t6, $t6, 1
         j    ord_loop2_beg
+ord_loop2_nextline:
+	addi $t6, $t6, 1
+	move $t9, $zero
+	j    ord_loop2_beg
 ord_loop2_end:  
 
 
