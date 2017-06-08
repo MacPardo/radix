@@ -278,25 +278,7 @@ ord_loop1_beg:
         
         sw   $t0, 0 ($t6)
 
-	li   $v0, 1
-	move $a0, $t6
-	syscall
-	li   $v0, 4
-	la   $a0, txt_espaco
-	syscall
-
         addi $t6, $t6, 4  #vai para o proximo indice do vetor radix
-
-	li   $v0, 1
-	move $a0, $t6
-	syscall
-	li   $v0, 4
-	la   $a0, txt_espaco
-	syscall
-
-	li   $v0, 4
-	la   $a0, txt_linha
-	syscall
 
 nao_digito_atual:
 
