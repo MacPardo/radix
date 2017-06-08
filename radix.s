@@ -9,7 +9,7 @@ txt_nao_existe: .asciiz "\nO elemento nao existe!\n"
 txt_vazia:      .asciiz "\nLista vazia!\n"
 txt_remover:    .asciiz "\nElemento a remover: "
 txt_debug:      .asciiz "\nDebug\n"
-int_aux:        .space   40
+int_aux:        .word   40
         .text
 main:
         li   $s0, 0     #s0 aponta para o inicio da lista, inicialmente NULL
@@ -207,6 +207,7 @@ buscar_nao_encontrou:
 #FIM DA BUSCA        
 
 ordenar:
+
         beqz $s0, menu #voce nao precisa ordenar se voce nao tem uma lista
 
         #t0 eh valor do elemento atual
@@ -241,9 +242,6 @@ ord_loop0_beg:          #loop para encontrar o valor maximo e o tamanho da lista
         j    ord_loop0_beg
 ord_loop0_end:
 
-
-
-
         #agora t2 eh o maior valor e t3 eh o tamanho da lista
 
         #declaracao do segundo vetor auxiliar
@@ -260,15 +258,18 @@ ord_loop0_end:
         
         move $t1, $s0
 
+
 ord_loop_beg:           #loop que faz a ordenacao
         #sai do loop quando max < n
         slt  $t9, $t2, $t4 #se t2 (max) < t4 (n) entao t9 = 1 senao t9 = 0
         bnez $t9, ord_loop_end #se max < n sai do loop
 
         #zera o vetor auxiliar 1
-        move $t9, $s4
+        #move $t9, $s4
+        la   $t9, int_aux
+        add  $a2, $t9, $s2
 zerar_aux_beg:          #preenche int_aux com zero
-        beq  $t9, $s2, ord_loop1_beg #se t9 for igual ao tamanho do int_aux
+        beq  $t9, $a2, ord_loop1_beg #se t9 for igual ao tamanho do int_aux
         sw   $zero, 0 ($t9)
         addi $t9, $t9, 4
         j    zerar_aux_beg
@@ -317,18 +318,20 @@ ord_loop1_beg:          #este loop coloca os numeros nas filas
 ord_loop1_end:  
 
         move $t1, $s0
-        #agr t4 indica a posicao do primeiro elemento da fila
+        move $t9, $zero
+        #agr t9 indica a posicao do primeiro elemento da fila
         #t6 eh a fila atual
         #t7 eh o tamanho da fila atual
         li   $t6, 0
 ord_loop2_beg:  
-        beq  $t6, $s1, ord_loop2_end #se ja passou por todas as filas sai do loop
+        #beq  $t6, $s1, ord_loop2_end #se ja passou por todas as filas sai do loop
+	beqz $t1, ord_loop2_end
 
         #t8 = (t6 * 10 + t4) * 4
         #t8 = posicao de memoria que tem o numero a escrever na lista
         mult $t6, $s1
         mflo $t8
-        add  $t8, $t8, $t4
+        add  $t8, $t8, $t9
         mult $t8, $s3
         mflo $t8
 
@@ -343,8 +346,8 @@ ord_loop2_beg:
         #t1 = t1->next
         lw   $t1, 8 ($t1)
 
-        bne  $t4, $t7, ord_loop2_beg
-        move $t4, $zero
+        bne  $t9, $t7, ord_loop2_beg
+        move $t9, $zero
         addi $t6, $t6, 1
         j    ord_loop2_beg
 ord_loop2_end:  
