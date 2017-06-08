@@ -252,10 +252,12 @@ ord_loop_beg:
 
         move $t7, $zero
 
+	move $t6, $t5 #t6 = endereco da primeira posicao do vetor radix
+
 ord_d_beg:	#este loop roda 10 vezes para testar cada digito
         beq  $t7, $s1, ord_d_end
 
-        move $t6, $t5 #t6 = endereco da primeira posicao do vetor radix
+        
         move $t1, $s0 #t1 = primeiro elemento da lista
 
 ord_loop1_beg:
@@ -272,14 +274,28 @@ ord_loop1_beg:
         bne  $t8, $t7, nao_digito_atual
         #entra aqui se for o digito atual
         #entao tem que colocar no vetor do radix
+
+        
         sw   $t0, 0 ($t6)
-        addi $t6, $t6, 4  #vai para o proximo indice do vetor radix
 
 	li   $v0, 1
-	move $a0, $t8
+	move $a0, $t6
 	syscall
 	li   $v0, 4
 	la   $a0, txt_espaco
+	syscall
+
+        addi $t6, $t6, 4  #vai para o proximo indice do vetor radix
+
+	li   $v0, 1
+	move $a0, $t6
+	syscall
+	li   $v0, 4
+	la   $a0, txt_espaco
+	syscall
+
+	li   $v0, 4
+	la   $a0, txt_linha
 	syscall
 
 nao_digito_atual:
@@ -302,9 +318,6 @@ ord_loop2_beg:	#loop que passa de volta para a lista
 		
 	lw   $t0, 0 ($t6)
 	sw   $t0  0 ($t1)
-	
-
-
 	
 	lw   $t1, 8 ($t1) #t1 = t1->next
 	addi $t6, $t6, 4
