@@ -15,7 +15,7 @@ main:
         li   $s1, 10
         li   $s2, 40
         li   $s3, 4
-
+        li   $s4, 19
 menu:    
         la   $a0, txt_menu
         li   $v0, 4
@@ -254,8 +254,8 @@ ord_loop_beg:
 
 	move $t6, $t5 #t6 = endereco da primeira posicao do vetor radix
 
-ord_d_beg:	#este loop roda 10 vezes para testar cada digito
-        beq  $t7, $s1, ord_d_end
+ord_d_beg:	#este loop roda 19 vezes para testar cada digito positivo e negativo
+        beq  $t7, $s4, ord_d_end
 
         
         move $t1, $s0 #t1 = primeiro elemento da lista
@@ -265,11 +265,12 @@ ord_loop1_beg:
         lw   $t0, 0 ($t1) #t0 = t1->val
 
         #t8 = enesimo digito do numero
-        #t8 = (t0 / n) % 10
+        #t8 = (t0 / n) % 10 + 9
         div  $t0, $t4
         mflo $t8 #t8 = t0 * t4
         div  $t8, $s1
         mfhi $t8 #t8 %= 10
+        addi $t8, $t8, 9 #t8 += 9
 
         bne  $t8, $t7, nao_digito_atual
         #entra aqui se for o digito atual
